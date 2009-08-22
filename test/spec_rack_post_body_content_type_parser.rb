@@ -13,6 +13,22 @@ begin
       body['body'].should.equal "asdf"
       body['status'].should.equal "12"
     end
+    
+    specify "should handle requests with POST body Content-Type of text/json" do
+      app = lambda { |env| [200, {'Content-Type' => 'text/plain'}, Rack::Request.new(env).POST] }
+      env = env_for_post_with_headers('/', {'Content_Type'.upcase => 'text/json'}, {:body => "anybody", :status => "13"}.to_json)
+      body = Rack::PostBodyContentTypeParser.new(app).call(env).last
+      body['body'].should.equal "anybody"
+      body['status'].should.equal "13"
+    end
+    
+    specify "should use the first Content-Type if more than one parameter is specified" do
+      app = lambda { |env| [200, {'Content-Type' => 'text/plain'}, Rack::Request.new(env).POST] }
+      env = env_for_post_with_headers('/', {'Content_Type'.upcase => 'application/json;charset=utf-8'}, {:body => "anybody", :status => "14"}.to_json)
+      body = Rack::PostBodyContentTypeParser.new(app).call(env).last
+      body['body'].should.equal "anybody"
+      body['status'].should.equal "14"
+    end
 
     specify "should change nothing when the POST body content type isn't application/json" do
       app = lambda { |env| [200, {'Content-Type' => 'text/plain'}, Rack::Request.new(env).POST] }

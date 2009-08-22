@@ -23,15 +23,20 @@ module Rack
     # Supported Content-Types
     #
     APPLICATION_JSON = 'application/json'.freeze
+    TEXT_JSON = 'text/json'.freeze
 
     def initialize(app)
       @app = app
     end
 
     def call(env)
-      case env[CONTENT_TYPE]
-      when APPLICATION_JSON
-        env.update(FORM_HASH => JSON.parse(env[POST_BODY].read), FORM_INPUT => env[POST_BODY])
+      if env[CONTENT_TYPE]
+        case env[CONTENT_TYPE].split(';').first
+        when APPLICATION_JSON
+          env.update(FORM_HASH => JSON.parse(env[POST_BODY].read), FORM_INPUT => env[POST_BODY])
+        when TEXT_JSON
+          env.update(FORM_HASH => JSON.parse(env[POST_BODY].read), FORM_INPUT => env[POST_BODY])
+        end
       end
       @app.call(env)
     end
